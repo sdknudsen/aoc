@@ -3,28 +3,20 @@ using DelimitedFiles
 using StatsBase
 
 #splice!(collection, n:n-1, replacement)
-# not 5
 
-xin = split(read("in9.txt", String))
-input = parse.(Int, xin)
-# input = parse.(Int, split(read("in9.txt", String), "\n"))
-# input = parse.(Int, split(read("in9.txt", String), "\n"))
-
+input = parse.(Int, split(read("in9.txt", String)))
 
 function hasprop(num, arr)
 
-    # println("*****")
-    # println(num)
-    # println(arr)
-    prop = false
-    for x in arr
-        if (num - x in arr)
-            prop = true
-        end
-    end
-    # println(prop)
-    #println("*DONE*****")
-    return prop
+    ##prop = false
+    ##for x in arr
+    ##    if (num - x in arr)
+    ##        prop = true
+    ##    end
+    ##end
+    ##return prop
+
+    return all(x -> num - x in arr, arr)
 end
 
 function main()
@@ -42,10 +34,5 @@ function main()
         end
     end
 end
-
-
-# function main()
-#     println(count(l  -> valid(l), input))
-# end
 
 main()

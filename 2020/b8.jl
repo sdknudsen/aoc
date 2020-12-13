@@ -9,18 +9,11 @@ function check_jmp_op(input)
     pc = 1
     acc = 0
 
-    while seen[pc] == false # && pc != length(input)
+    while seen[pc] == false
 
         seen[pc] = true
 
-        # keys = map(x -> x[1], collect(eachmatch(r"(\w\w\w):", p)))
-        # expected_keys = sort(["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid", "cid"])
-        # expected_keys1 = sort(["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid", "cid"])
-
         statement = match(r"(\w{3}) (.+)", input[pc])
-        # println(statement)
-        # println(acc)
-        # print(pc)
         action = statement[1]
         n = parse(Int, statement[2])
 
@@ -47,7 +40,6 @@ function check_jmp_op(input)
     if pc == length(input)
         println("********")
         println(acc)
-        # println(pc)
         println("********")
     end
 
@@ -70,8 +62,6 @@ function main()
         currinput[i] =  replace(currinput[i], "nop"=>"jmp")
         check_jmp_op(currinput)
     end
-
-    # println(count(l  -> valid(l), input))
 
 end
 

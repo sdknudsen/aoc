@@ -2,9 +2,6 @@ using LinearAlgebra
 using DelimitedFiles
 using StatsBase
 
-
-
-
 input = split(read("in7.txt", String), "\n")
 
 input = """
@@ -29,7 +26,6 @@ dark blue bags contain 2 dark violet bags.
 dark violet bags contain no other bags.
 """
 
-
 Dict(Tuple.(split.(input, r" bag[s] contain "))[1:end-1])
 
 Dict(k => map(x -> x[1], eachmatch(r"(\w+ \w+) bag[s]?[.,] ?", v)) for (k,v) in d)
@@ -37,46 +33,35 @@ Dict(k => map(x -> x[1], eachmatch(r"(\w+ \w+) bag[s]?[.,] ?", v)) for (k,v) in 
 d = Dict(k => map(x -> (x[1], x[2]), eachmatch(r"(\d+) (\w+ \w+) bag[s]?[.,] ?", v)) for (k,v) in tre)
 
 
-
-
-
 function canreach(node, key, d)
+    if node == "no other"
+        return false
+    end
 
-if node == "no other"
-return false
+    if node == key
+        return true
+    end
+
+    return any(x -> canreach(x, key, d), d[node])
 end
-
-if node == key
-return true
-end
-
-return any(x -> canreach(x, key, d), d[node])
-
-end
-
 
 
 function bagcount(node, d)
+    if !(node in keys(d))
+        return 0
+    end
 
-if !(node in keys(d))
-return 0
+    if d[node] == []
+        return 0
+    end
+
+    return sum(map(x -> parse(Int, x[1]) * (1 + bagcount(x[2], d)), d[node]))
 end
-
-if d[node] == []
-return 0
-end
-
-return sum(map(x -> parse(Int, x[1]) * (1 + bagcount(x[2], d)), d[node]))
-
-end
-
-
 
 
 map(x -> canreach(x, "shiny gold", d), collect(keys(d)))
 
 bagcount("shiny gold", d)
-
 
 
 function main()
