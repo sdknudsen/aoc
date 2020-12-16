@@ -1,3 +1,4 @@
+# todo: dynamics programming, recursive w/ memoization
 using LinearAlgebra
 using DelimitedFiles
 using StatsBase
