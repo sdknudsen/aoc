@@ -74,3 +74,5 @@ println(run([8,13,1,0,18,9]))
 
 # println("turnarr: $turnarr")
 # println("last: $(turnarr[end])")
+
+# [0, 3, 6, 0, 3, 3, 1, 0, 4, 0]

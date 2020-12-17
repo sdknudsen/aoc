@@ -1,6 +1,6 @@
 # saidbefore = BitSet()
 lastseen = Dict()
-nturns = 10 # 30000000
+nturns = 30000000
 
 # startnums = [0,3,6]
 
@@ -10,8 +10,9 @@ function run(startnums)
         # push!(saidbefore, startnums[i])
         # countdict[startnums[i]] = get(countdict, startnums[i], -1) + 1
         lastseen[startnums[i]] = [i]
+        # println("turn $i: $(startnums[i])")
     end
-    println(lastseen)
+    # println(lastseen)
 
     function findlast(turnarr, key, pos)
         for j in pos:-1:1
@@ -43,13 +44,17 @@ function run(startnums)
         end
     end
 
-    function update(d, i)
-
+    function lasttwo(ls)
+        if length(ls) < 2
+            return ls[end]
+        else
+            return ls[end-1:end]
+        end
     end
 
     for i in (length(startnums) + 1):nturns
-        println(lastseen)
-        if i % 10000 == 0
+        # println(lastseen)
+        if i % 500000 == 0
             println(i)
         end
         # println("TURN: $i")
@@ -59,8 +64,9 @@ function run(startnums)
 
         turnarr[i] = getlastdiff(turnarr[i-1])
         # update(lastseen, turnarr[i])
-        lastseen[turnarr[i]] = append!(get(lastseen, turnarr[i], [0]), i)
-        println("turn $i: $(turnarr[i])")
+        arr = get(lastseen, turnarr[i], [])
+        lastseen[turnarr[i]] = lasttwo(vcat(arr, i))
+        # println("turn $i: $(turnarr[i])")
 
         # push!(saidbefore, nextnum)
 
@@ -69,6 +75,7 @@ function run(startnums)
         # println("pos: $pos")
         # println("key: $key")
     end
+    #println(lastseen)
     return turnarr[end]
 end
 
@@ -88,7 +95,8 @@ end
 # println(test([2,3,1], 78))
 # println(test([3,2,1], 438))
 # println(test([3,1,2], 1836))
-println(run([0,3,6]))
+#println(run([0,3,6]))
+println(run([8,13,1,0,18,9]))
 # 175594
 
 
