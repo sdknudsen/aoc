@@ -37,16 +37,16 @@ function main()
     res = 0
 
     ranges = collect(values(ticketDict))
-    for ticket in nearbyTickets
-        for n in ticket
-            if !(any(range -> inRange(n, range), ranges))
-                res += n
-                println(n)
-            end
-        end
-    end
+    # for ticket in nearbyTickets
+    #     for n in ticket
+    #         if !(any(range -> inRange(n, range), ranges))
+    #             res += n
+    #             println(n)
+    #         end
+    #     end
+    # end
 
-    println("result: $res")
+    # println("result: $res")
     # end
     #validTicket.(collect(values(ticketDict)), nearbyTickets)
 
@@ -55,7 +55,18 @@ function main()
     # println(nearbyTickets)
 
     transposed = permutedims(nearbyTickets)
-    for ticketDict
+println(transposed)
+    # for (name,range) in ticketDict
+    #     println()
+    #     println(name)
+    #     for i in 1:length(transposed)
+    #         if all(n -> inRange(n, range), transposed[i])
+    #             # println(field)
+    #             print("$i, ")
+    #             # count += 1
+    #         end
+    #     end
+    # end
 end
 
 

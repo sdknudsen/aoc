@@ -4,7 +4,7 @@ using LinearAlgebra
 # lines = map(collect, readlines("testin11.txt"))
 # grid = permutedims(hcat(lines[1:end-1]...)) # only remove last element if it's causing problems
 
-lines = map(collect, readlines("in11.txt"))
+lines = map(collect, readlines("testin17.txt"))
 grid = permutedims(hcat(lines...))
 
 function pprint(M)
@@ -12,11 +12,13 @@ function pprint(M)
 end
 
 function format(M)
-    (m,n) = size(M) .+ (2,2)
-    filled = fill('.', m, n)
-    for i in 1:m-2
-        for j in 1:n-2
-            filled[i+1,j+1] = grid[i,j]
+    offset = 1
+    (m,n,l) = size(M) .+ (2 * offset, 2 * offset, 2 * offset)
+    filled = fill('.', m, n, l)
+    for i in offset:m-1 - offset
+        for j in offset:n-1 - offset
+            k = offset * 2
+                filled[i+offset,j+offset, k] = grid[i,j]
         end
     end
     return filled
