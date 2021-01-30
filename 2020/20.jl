@@ -51,18 +51,70 @@ function main()
 
     mat = mat ./ 2
     println(mat)
-    grid = zeros(Int(sqrt(n)),Int(sqrt(n)))
+    gridsize = Int(sqrt(n))
+    grid = zeros(gridsize,gridsize)
 
     ids = Dict(reverse.(collect(indexDict)))
     cornercolindex = findfirst(==(2.0), map(sum, eachcol(mat)))
     grid[cornercolindex, cornercolindex] = ids[cornercolindex]
-    unseen = indexes
+    unseen = Set(1:n)
+    pop!(unseen, cornercolindex)
 
+    edges = findall(!=(4.0), map(sum, eachcol(mat)))
+    prev = cornercolindex
+    for col in 2:gridsize
+        row = 1
+        nbrs = findall(==(1.0), mat[:,prev])
+        unseennbrs = intersect(nbrs, unseen)
+        index = intersect(edges, unseennbrs)[1]
+        grid[row, col] = ids[index]
+        pop!(unseen, index)
+        prev = index
 
-    edges = findall(==(3.0), map(sum, eachcol(mat)))
-    lastneigbors = findall(!=(0.0), mat[cornercolindex, :])
-                          = ids[cornercolindex]
-    #for
+    end
+
+    for row in 2:gridsize
+        col = gridsize
+        nbrs = findall(==(1.0), mat[:,prev])
+        unseennbrs = intersect(nbrs, unseen)
+        index = intersect(edges, unseennbrs)[1]
+        grid[row, col] = ids[index]
+        pop!(unseen, index)
+        prev = index
+    end
+
+    for col in gridsize-1:1
+        row = gridsize
+        nbrs = findall(==(1.0), mat[:,prev])
+        unseennbrs = intersect(nbrs, unseen)
+        index = intersect(edges, unseennbrs)[1]
+        grid[row, col] = ids[index]
+        pop!(unseen, index)
+        prev = index
+    end
+
+    for row in gridsize-1:2
+        col = 1
+        nbrs = findall(==(1.0), mat[:,prev])
+        unseennbrs = intersect(nbrs, unseen)
+        index = intersect(edges, unseennbrs)[1]
+        grid[row, col] = ids[index]
+        pop!(unseen, index)
+        prev = index
+    end
+
+    for i in 2:gridsize-1
+        for j in 2:gridsize-1
+            ## need to get the upper and left values from grid by looking them up in indexDict
+            #?????
+            inbrs = findall(==(1.0), mat[:,i-1])
+            jnbrs = findall(==(1.0), mat[:,j-1])
+            index = intersect(inbrs, jnbrs, unseen)
+            grid[i, j] = ids[index]
+            pop!(unseen, index)
+        end
+    end
+
 
     # for pair in tileOrientations
 
