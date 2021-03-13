@@ -1,3 +1,5 @@
+using LinearAlgebra
+
 # input = split(read("testin16.txt", String), "\n")
 # input = split(read("in16.txt", String), "\n")
 
@@ -71,19 +73,19 @@ function main()
     println(nmrangeprs)
     println("Possibilities:")
 
-    possible = Int.(zeros(length(validNearby), length(nmrangeprs)))
+    possible = Int.(zeros(length(nmrangeprs), length(validNearby)))
     println(size(possible))
 
     for c in 1:length(nmrangeprs)
         (name, range) = nmrangeprs[c]
         # for (name, range) in nmrangeprs
+        println("****************")
         println(name)
         println(range)
         println()
-        for i=1:size(transposed,2)
-            # println(transposed[i,:])
-            # println("???")
-            if all(j -> inRange(j, range), transposed[i,:])
+        for i=1:length(validNearby)
+            println(transposed[:,i])
+            if all(j -> inRange(j, range), transposed[:,i])
                 println(i)
                 possible[c,i] = 1
             end
@@ -91,7 +93,8 @@ function main()
         end
     end
 
-    # println(possible)
+    println()
+    println(possible)
         # mapslices(r -> all(x -> inrange(x, r), r), a, dims = 1)
     # for row in transpose
     #     for n in row
