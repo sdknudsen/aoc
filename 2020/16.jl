@@ -25,8 +25,10 @@ end
 function main()
     # input = split.(split(read("testin16.txt", String), "\n\n"), "\n")
 
+    # input = split.(split(read("testin16b.txt", String), "\n\n"), "\n")
     input = split.(split(read("in16.txt", String), "\n\n"), "\n")
     ticketDict = parseTickets(input[1])
+    # nearbyTickets = map(x -> parse.(Int, x), split.(input[3], ",")[2:end]) # -1 only applies to input, not to test intput
     nearbyTickets = map(x -> parse.(Int, x), split.(input[3], ",")[2:end-1]) # -1 only applies to input, not to test intput
     # println(nearbyTickets)
     # println(validTicket.(collect(values(ticketDict)), nearbyTickets))
@@ -35,16 +37,25 @@ function main()
 
         #println(filter(t -> !validTicket(collect(values(ticketDict)), t), nearbyTickets))
     res = 0
+    valid = Int.(ones(length(nearbyTickets)))
 
     ranges = collect(values(ticketDict))
-    # for ticket in nearbyTickets
-    #     for n in ticket
-    #         if !(any(range -> inRange(n, range), ranges))
-    #             res += n
-    #             println(n)
-    #         end
-    #     end
-    # end
+    for i in 1:length(nearbyTickets)
+        ticket = nearbyTickets[i]
+        for n in ticket
+            if !(any(range -> inRange(n, range), ranges))
+                # deleteat!(nmrangeprs,i)
+                valid[i] = 0
+                # good += ticket
+                res += n
+                # println(n)
+            end
+        end
+    end
+
+    validNearby = nearbyTickets[Bool.(valid)]
+
+    nmrangeprs = collect(ticketDict)
 
     # println("result: $res")
     # end
@@ -54,8 +65,42 @@ function main()
     # println()
     # println(nearbyTickets)
 
-    transposed = permutedims(nearbyTickets)
-println(transposed)
+    transposed = transpose(hcat(validNearby...))
+    println(transposed)
+    println("___")
+    println(nmrangeprs)
+    println("Possibilities:")
+
+    possible = Int.(zeros(length(validNearby), length(nmrangeprs)))
+    println(size(possible))
+
+    for c in 1:length(nmrangeprs)
+        (name, range) = nmrangeprs[c]
+        # for (name, range) in nmrangeprs
+        println(name)
+        println(range)
+        println()
+        for i=1:size(transposed,2)
+            # println(transposed[i,:])
+            # println("???")
+            if all(j -> inRange(j, range), transposed[i,:])
+                println(i)
+                possible[c,i] = 1
+            end
+
+        end
+    end
+
+    # println(possible)
+        # mapslices(r -> all(x -> inrange(x, r), r), a, dims = 1)
+    # for row in transpose
+    #     for n in row
+    #         println(n)
+
+    #     end
+    # end
+
+
     # for (name,range) in ticketDict
     #     println()
     #     println(name)

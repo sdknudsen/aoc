@@ -5,26 +5,36 @@ function getRgx(e, d)
     c = match(r"(\d)+ (\d)+", e)
     g = match(r"(\d)+", e)
     h = match(r"(\d)+(\d)+(\d)+", e)
-    e = match(r"\"(.+)\"", e)
+    i = match(r"\"(.+)\"", e)
 
-    if a != nothing
+    println("exp")
+    println(e)
+    println()
+    # println(isdefined(key))
+
+    if i != nothing
+    println("i")
+        return e
+    elseif a != nothing
+    println("a")
         m = a.captures
         return "$(getRgx(d[m[1]],d))$(getRgx(d[m[2]],d))|$(getRgx(d[m[3]],d))$(getRgx(d[m[4]],d))"
     elseif b != nothing
+    println("b")
         m = b.captures
         return "$(getRgx(d[m[1]],d))|$(getRgx(d[m[2]],d))"
     elseif c != nothing
+    println("c")
         m = c.captures
         return "$(getRgx(d[m[1]],d))$(getRgx(d[m[2]],d))"
     elseif h != nothing
+    println("h")
         m = h.captures
         return "$(getRgx(d[m[1]],d))$(getRgx(d[m[2]],d))$(getRgx(d[m[3]],d))"
     elseif g != nothing
+    println("g")
         m = g.match
         return "$(getRgx(d[m],d))"
-    elseif e != nothing
-        m = e.match
-        return e
     else
         println("ERROR")
     end
@@ -42,6 +52,7 @@ function main()
     exps = input[2][1:end-1]
     d = Dict(split.(rgx, ": "))
 
+    println(d)
     println(getRgx("0", d))
 
     # parsed = map(x -> parseTicket(x), ts)
