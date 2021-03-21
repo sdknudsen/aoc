@@ -4,9 +4,7 @@ using LinearAlgebra
 # input = split(read("in16.txt", String), "\n")
 
 
-function inRange(n, r)
-    return n in r[1] || n in r[2]
-end
+inRange(n, r) = n in r[1] || n in r[2]
 
 function parseTicket(t)
     capture = match(r"(.*): (\d+)-(\d+) or (\d+)-(\d+)", t).captures
@@ -20,25 +18,17 @@ function parseTickets(ts)
     return Dict(parsed)
 end
 
-function validTicket(format, ticket)
-    all(field -> any(n -> inRange(n, field), ticket), format)
-end
+validTicket(format, ticket) = all(field -> any(n -> inRange(n, field), ticket), format)
 
 function main()
     # input = split.(split(read("testin16.txt", String), "\n\n"), "\n")
-
     # input = split.(split(read("testin16b.txt", String), "\n\n"), "\n")
     input = split.(split(read("in16.txt", String), "\n\n"), "\n")
-    ticketDict = parseTickets(input[1])
-    # nearbyTickets = map(x -> parse.(Int, x), split.(input[3], ",")[2:end]) # -1 only applies to input, not to test intput
-    nearbyTickets = map(x -> parse.(Int, x), split.(input[3], ",")[2:end-1]) # -1 only applies to input, not to test intput
-    # println(nearbyTickets)
-    # println(validTicket.(collect(values(ticketDict)), nearbyTickets))
-    # for t in nearbyTickets
-    #     println("ticket $t: ")
+    # -1 only applies to input, not to test intput
+    # nearbyTickets = map(x -> parse.(Int, x), split.(input[3], ",")[2:end])
+    nearbyTickets = map(x -> parse.(Int, x), split.(input[3], ",")[2:end-1])
 
-        #println(filter(t -> !validTicket(collect(values(ticketDict)), t), nearbyTickets))
-    res = 0
+    ticketDict = parseTickets(input[1])
     valid = Int.(ones(length(nearbyTickets)))
 
     ranges = collect(values(ticketDict))
@@ -46,80 +36,116 @@ function main()
         ticket = nearbyTickets[i]
         for n in ticket
             if !(any(range -> inRange(n, range), ranges))
-                # deleteat!(nmrangeprs,i)
                 valid[i] = 0
-                # good += ticket
-                res += n
-                # println(n)
             end
         end
     end
 
     validNearby = nearbyTickets[Bool.(valid)]
 
-    nmrangeprs = collect(ticketDict)
-
-    # println("result: $res")
-    # end
-    #validTicket.(collect(values(ticketDict)), nearbyTickets)
+    ticketFields = collect(ticketDict)
 
     # println(values(ticketDict))
     # println()
     # println(nearbyTickets)
 
-    transposed = transpose(hcat(validNearby...))
-    println(transposed)
+    validMat = transpose(hcat(validNearby...))
+    println(validMat)
     println("___")
-    println(nmrangeprs)
+    println(ticketFields)
     println("Possibilities:")
 
-    possible = Int.(zeros(length(nmrangeprs), length(validNearby)))
+    possible = Int.(zeros(length(ticketFields), length(ticketFields)))
     println(size(possible))
 
-    for c in 1:length(nmrangeprs)
-        (name, range) = nmrangeprs[c]
-        # for (name, range) in nmrangeprs
+    for i in 1:length(ticketFields)
+        (name, range) = ticketFields[i]
         println("****************")
         println(name)
         println(range)
         println()
-        for i=1:length(validNearby)
-            println(transposed[:,i])
-            if all(j -> inRange(j, range), transposed[:,i])
-                println(i)
-                possible[c,i] = 1
+        for j=1:length(ticketFields)
+            # println(validMat[:,j])
+            if all(x -> inRange(x, range), validMat[:,j])
+                possible[i,j] = 1
             end
+
+
+            #     println(size(validMat))
+            #     println(validMat[i,:])
 
         end
     end
 
     println()
     println(possible)
-        # mapslices(r -> all(x -> inrange(x, r), r), a, dims = 1)
-    # for row in transpose
-    #     for n in row
-    #         println(n)
 
-    #     end
-    # end
+    # sum rows
+    sum(A, dims=2)
+    # sum cols
+    sum(A, dims=1)
 
 
-    # for (name,range) in ticketDict
-    #     println()
-    #     println(name)
-    #     for i in 1:length(transposed)
-    #         if all(n -> inRange(n, range), transposed[i])
-    #             # println(field)
-    #             print("$i, ")
-    #             # count += 1
-    #         end
-    #     end
-    # end
 end
 
 
 main()
 
-# captures = map(x -> x.captures, match.(r"(.*): (\d+)-(\d+) or (\d+)-(\d+)", ts))
-# pairs = map(x -> (x[1], parse.(Int, x[2:end])), captures)
-# ranges = map(x -> (x[1], parse.(Int, x[2:end])), captures)
+
+# 0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0
+# 0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0
+# 0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0
+# 0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1
+# 0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0
+# 1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0
+# 0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0
+
+#                     1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
+# departure date      0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0
+# zone                0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0
+# price               0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# arrival station     0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0
+# wagon               0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# row                 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0
+# duration            0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# departure station   0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0
+# arrival location    0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0
+# train               0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0
+# departure track     0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1
+# departure time      0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# route               0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0
+# departure location  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# class               0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0
+# departure platform  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0
+# arrival platform    0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0
+# arrival track       0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# seat                0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0
+# type                0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0
+
+
+# A = [
+# 0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1
+# 0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# 1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+# 0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0
+# ]
+#
+# v = [67,107,59,79,53,131,61,101,71,73,137,109,157,113,173,103,83,167,149,163]
+
+# julia> prod(A * v)
+# 517827547723

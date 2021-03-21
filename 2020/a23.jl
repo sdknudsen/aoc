@@ -116,21 +116,25 @@ function unittest(input)
 end
 
 function run()
-    # input = "389125467"
-    input = "716892543"
+    input = "389125467"
+    # input = "716892543"
     arr = parse.(Int, collect(input))
     key = 3
 
     for count = 1:100
+        println("-- move $count --")
+        println("cups: $arr")
         d = step(arr, key)
 
-        println(count + 1)
+        # if this is supposed to be the destination, it's wrong:
+        println("destination: $(count + 1)")
         # println(actual["cups"])
         # println(cups)
 
         key = d["keyout"]
         arr = d["cupsout"]
-        println(arr)
+        # println(arr)
+        println()
     end
 end
 
