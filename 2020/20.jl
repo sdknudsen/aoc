@@ -1,5 +1,6 @@
 using DataFrames
 using StatsBase
+using LinearAlgebra
 
 TILESIZE = 10
 
@@ -24,14 +25,42 @@ function parseToIdMatPair(tile)
     return (tilenumber, mat)
 end
 
+function findseamonsters(img)
+    seamonster = [
+        0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+        1 0 0 0 0 1 1 0 0 0 0 1 1 0 0 0 0 1 1 1
+        0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0]
+
+    count = 0
+    for _ in 1:4
+        (img_m,img_n) = size(img)
+        (sea_m,sea_n) = size(seamonster)
+        monster_size = sum(seamonster)
+        for i in 1:img_m - sea_m+1
+            for j in 1:img_n - sea_n+1
+                if sum(img[i:i+sea_m-1,j:j+sea_n-1] .& seamonster) == monster_size
+                    count += 1
+                end
+            end
+        end
+        if count > 0
+            println(count)
+            return monster_size * count
+        end
+        img = rotl90(img)
+    end
+    return -1
+end
+
+
 function main()
-    input = split.(split(read("testin20.txt", String)[1:end-1], "\n\n"), "\n")
-    # input = split.(split(read("in20.txt", String), "\n\n"), "\n")[1:end-1]
+    # input = split.(split(read("testin20.txt", String)[1:end-1], "\n\n"), "\n")
+    input = split.(split(read("in20.txt", String)[1:end-1], "\n\n"), "\n")
+    # input = split.(split(read("in20.txt", String), "\n\n"), "\n")[1:end]
     tileOrientations = sort(vcat(parseTile.(input)...))
-    tileDict = parseToIdMatPair.(input)
+    tileDict = Dict(parseToIdMatPair.(input))
 
     # list of pairs where first element is tile edge pattern and second is tileid
-    println(tileOrientations)
 
     df = DataFrame(edge = [x[1] for x in tileOrientations], tileId = [x[2] for x in tileOrientations])
     gd = groupby(df,:edge) # get pairs of adjacent tiles
@@ -45,12 +74,7 @@ function main()
     for g in gd
         group = g[:tileId]
 
-        if length(group) != 2
-            # println("**** WARNING ****")
-            println(group)
-        else
-            # println("ADDING")
-            println(group)
+        if length(group) == 2
             a = group[1]
             b = group[2]
             i = indexDict[a]
@@ -75,6 +99,8 @@ function main()
     unseen = Set(1:n)
     pop!(unseen, cornercolindex)
 
+    unseenIds = Set(map(x -> ids[x], collect(unseen)))
+
     # Fill in edges with position indexes
     edges = collect(Set(reduce(vcat, filter(y -> length(y) == 1, map(x -> x[:tileId], collect(gd))))))
     edgeNbrPairs = collect(Set(filter(x -> all(y -> y in edges, x), nbrPairs)))
@@ -87,7 +113,8 @@ function main()
         edgeNbrPairs = filter(!=(tilepair), edgeNbrPairs)
         tile = filter(y -> y != prev, tilepair)[1]
         arrangedEdges[edgeIndx] = tile
-        prev =  tile
+        prev = tile
+        unseenIds = filter(x -> x != tile, unseenIds)
     end
 
     iindexes = [repeat(1:1,gridsize-1); 1:gridsize-1; repeat(gridsize:gridsize,gridsize-1); gridsize:-1:1]
@@ -97,8 +124,6 @@ function main()
     end
 
     remainingNbrPairs = nbrPairs
-
-    unseenIds = Set(map(x -> ids[x], collect(unseen)))
 
     # Fill in body with position indexes
     for i in 2:gridsize-1
@@ -116,67 +141,123 @@ function main()
             unseenIds = filter(!=(selected), unseenIds)
         end
     end
-    println(grid)
-
 
     img = Bool.(zeros(gridsize * TILESIZE, gridsize * TILESIZE))
 
-    # TODO: rotate grid[1,1] so that it aligns with its neighbors
-    # rotate each piece so that it aligns with above and left neighbors
-    ###### println(img)
-
-    #####end
 
     # Insert each tile into the position found previously, rotate and flip to fit
-    for i in 1:gridsize
-        for j in 1:gridsize
+
+    # Top left corner
+    i = j = 1
+    tileIndex = grid[i,j]
+    tile = tileDict[tileIndex]
+    # Insert first tile into the found position, rotating and flipping to fit
+    right = grid[i,j+1]
+    below = grid[i+1,j]
+    # shared edge might still have to be reversed
+    sharedEdgeR = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && right in x[:tileId], collect(gd))[1][:edge][1]))
+    sharedEdgeB = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && below in x[:tileId], collect(gd))[1][:edge][1]))
+
+    while !(tile[:,end] == sharedEdgeR || reverse(tile[:,end]) == sharedEdgeR)
+        tile = rotl90(tile)
+    end
+    if !(tile[end,:] == sharedEdgeB || reverse(tile[end,:]) == sharedEdgeB)
+        tile = tile[end:-1:1,:]
+    end
+    img[1:TILESIZE,1:TILESIZE] = tile
+
+    # Top row
+    i = 1
+    for j in 2:gridsize
+        tileIndex = grid[i,j]
+        tile = tileDict[tileIndex]
+
+        left = grid[i,j-1]
+        below = grid[i+1,j]
+        sharedEdgeL = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && left in x[:tileId], collect(gd))[1][:edge][1]))
+        sharedEdgeB = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && below in x[:tileId], collect(gd))[1][:edge][1]))
+        for step in 1:4
+            if tile[:,1] == sharedEdgeL || reverse(tile[:,1]) == sharedEdgeL
+                break
+            else
+                tile = rotl90(tile)
+            end
+        end
+        if !(tile[end,:] == sharedEdgeB || reverse(tile[end,:]) == sharedEdgeB)
+            tile = tile[end:-1:1,:]
+        end
+        joffset = (j-1) * TILESIZE
+        img[1:TILESIZE,joffset+1:joffset+TILESIZE] = tile
+    end
+
+    # Left row
+    j = 1
+    for i in 2:gridsize
+        tileIndex = grid[i,j]
+        tile = tileDict[tileIndex]
+        right = grid[i,j+1]
+        above = grid[i-1,j]
+        sharedEdgeR = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && right in x[:tileId], collect(gd))[1][:edge][1]))
+        sharedEdgeA = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && above in x[:tileId], collect(gd))[1][:edge][1]))
+        for step in 1:4
+            if tile[:,end] == sharedEdgeR || reverse(tile[:,end]) == sharedEdgeR
+                break
+            else
+                tile = rotl90(tile)
+            end
+        end
+        if !(tile[1,:] == sharedEdgeA || reverse(tile[1,:]) == sharedEdgeA)
+            tile = tile[end:-1:1,:]
+        end
+        # img[i:i+TILESIZE-1,j:j+TILESIZE-1] = tile
+        ioffset = (i-1) * TILESIZE
+        img[ioffset+1:ioffset+TILESIZE,1:TILESIZE] = tile
+    end
+
+    # All other tiles
+    for i in 2:gridsize
+        for j in 2:gridsize
             tileIndex = grid[i,j]
             tile = tileDict[tileIndex]
-            if i == 1 && j == 1
-                # Insert first tile into the found position, rotating and flipping to fit
-                right = grid[i,j+1]
-                below = grid[i+1,j]
-                # shared edge might still have to be reversed
-                sharedEdgeR = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && right in x[:tileId], collect(gd))[1][:edge][1]))
-                sharedEdgeB = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && below in x[:tileId], collect(gd))[1][:edge][1]))
-                for step in 1:4
-                    if tile[:,end] == sharedEdgeR || reverse(tile[:,end]) == sharedEdgeR
-                        break
-                    else
-                        rotl90(tile)
-                    end
-                end
-                if !(tile[end,:] == sharedEdgeB || reverse(tile[end,:]) == sharedEdgeB)
-                    tile = tile[end:-1:1,:]
-                end
+            # while(!tileFits)
+            #     rotateTile
+            # end
+            # insertTile(tile, img)
 
-                grid[i:i+TILESIZE-1,j:j+TILESIZE-1] = tile
-            else # All other tiles
-                while(!tileFits)
-                    rotateTile
+            left = grid[i,j-1]
+            above = grid[i-1,j]
+            # shared edge might still have to be reversed
+            sharedEdgeL = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && left in x[:tileId], collect(gd))[1][:edge][1]))
+            sharedEdgeA = map(==('#'), collect(filter(x -> tileIndex in x[:tileId] && above in x[:tileId], collect(gd))[1][:edge][1]))
+            for step in 1:4
+                if tile[:,1] == sharedEdgeL || reverse(tile[:,1]) == sharedEdgeL
+                    break
+                else
+                    tile = rotl90(tile)
                 end
-                insertTile(tile, img)
             end
-            ## ## need to get the upper and left values from grid by looking them up in indexDict
-            ## inbrs = findall(==(1.0), mat[:,i-1])
-            ## jnbrs = findall(==(1.0), mat[:,j-1])
-            ## index = intersect(inbrs, jnbrs, unseen)
-            ## grid[i, j] = ids[index]
-            ## pop!(unseen, index)
+            if !(tile[1,:] == sharedEdgeA || reverse(tile[1,:]) == sharedEdgeA)
+                tile = tile[end:-1:1,:]
+            end
+            ioffset = (i-1) * TILESIZE
+            joffset = (j-1) * TILESIZE
+            img[ioffset+1:ioffset+TILESIZE,joffset+1:joffset+TILESIZE] = tile
         end
     end
 
+    # Remove tile borders
+    template = Bool.(zeros(TILESIZE,TILESIZE))
+    smallfilter = Bool.(ones(TILESIZE-2,TILESIZE-2))
+    template[2:end-1,2:end-1] = smallfilter
+    largefilter = Bool.(kron(ones(gridsize,gridsize), template))
+    img = reshape(img[largefilter], gridsize * (TILESIZE-2), gridsize * (TILESIZE-2))
 
-    # for pair in tileOrientations
 
-    # border = sort(filter(x -> x[2] != 2, countmap(map(x -> x[1], tileOrientations))))
-    # borderDf = DataFrame(a = [x[1] for x in border], b = [x[2] for x in border])
+    # Find sea monsters
+    seamonstervolume = findseamonsters(img)
+    seamonstervolume += findseamonsters(img[end:-1:1,:])
 
-    # orientDf = DataFrame(a = [x[1] for x in tileOrientations], tileId = [x[2] for x in tileOrientations])
-
-    # joined = innerjoin(borderDf, orientDf, on = :a)
-
-    # println(countmap(joined[:tileId]))
+    println(sum(img) - seamonstervolume - 1)
 
 end
 
