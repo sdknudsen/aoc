@@ -4,172 +4,88 @@ using LinearAlgebra
 # lines = map(collect, readlines("testin11.txt"))
 # grid = permutedims(hcat(lines[1:end-1]...)) # only remove last element if it's causing problems
 
-lines = map(collect, readlines("testin17.txt"))
-grid = permutedims(hcat(lines...))
-
 function pprint(M)
     return String.([M[i, :] for i in 1:size(M, 1)])
 end
 
-function format(M)
-    offset = 1
-    (m,n,l) = size(M) .+ (2 * offset, 2 * offset, 2 * offset)
-    filled = fill('.', m, n, l)
-    for i in offset:m-1 - offset
-        for j in offset:n-1 - offset
-            k = offset * 2
-                filled[i+offset,j+offset, k] = grid[i,j]
-        end
-    end
-    return filled
-end
 
-function transform(M, i, j)
-    seat = M[i,j]
-    neighbors = [M[i-1, j-1] M[i-1, j] M[i-1, j+1] M[i, j-1]
-                 M[i, j+1] M[i+1, j-1] M[i+1, j] M[i+1, j+1]]
+function transform2(M, a, b, c, d)
+    seat = M[a,b,c,d]
+    # (m,n,p) = size(M)
+    # neighborList = [(-1, -1) (-1, 0) (-1, +1) (0, -1) (0, +1) (+1, -1) (+1, 0) (+1, +1)]
+    offsetList = setdiff(reshape([[i,j,k,l] for i in -1:1, j in -1:1, k in -1:1, l in -1:1],1,81),[[0,0,0]])
+    neighborList = [M[a+i,b+j,c+k,d+l] for (i,j,k,l) in offsetList]
+    counts = count(==('#'), neighborList)
 
-    counts = count(==('#'), neighbors)
-
-    if seat == 'L' && counts == 0
+    if counts == 3
         return '#'
-    elseif seat == '#' && counts >= 5
-        return 'L'
-
+    elseif seat == '#' && counts == 2
+        return '#'
     else
-        return seat
-
-    end
-end
-
-
-function transform2(M, a, b)
-    seat = M[a,b]
-
-    if seat == '.'
         return '.'
     end
 
-    (m,n) = size(M)
-
-    neighborList = [(-1, -1) (-1, 0) (-1, +1) (0, -1) (0, +1) (+1, -1) (+1, 0) (+1, +1)]
-    counts = 0
-
-    for nbr in neighborList
-        (i,j) = (a,b) .+ nbr
-        while i >= 1 && i <= m && j >= 1 && j <= n && M[i,j] == '.'
-            (i,j) = (i,j) .+ nbr
-        end
-
-        if i >= 1 && i <= m && j >= 1 && j <= n && M[i,j] == '#'
-            counts += 1
-        end
-    end
-
-    if seat == 'L' && counts == 0
-        return '#'
-    elseif seat == '#' && counts >= 5
-        return 'L'
-
-    else
-        return seat
-
-    end
 end
 
 function transformM(M)
-    nextM = copy(M)
-    (m,n) = size(M)
+    (m,n,p,q) = size(M)
+    nextM = repeat(['.'],m,n,p,q)
     for i in 2:m-1
         for j in 2:n-1
-            nextM[i,j] = transform2(M, i, j)
+            for k in 2:p-1
+                for l in 2:q-1
+                    nextM[i,j,k] = transform2(M, i, j, k, l)
+                end
+            end
         end
     end
     return nextM
 end
 
-# M2 = copy(M)
-# M = transformM(M)
-# while M != M2
-# M = transformM(M)
-# end
-
-
-pprint(transformM(format(grid)))
-    #neighborsSet = Set([i-1, j-1] [i-1, j] [i-1, j+1] [i, j-1] [i, j+1] [i+1, j-1] [i+1, j] [i+1, j+1])
-
-function mask(M,a,b)
-    (m,n) = size(M)
-    mat = fill(false, m, n)
-
-
-    for i in 1:m
-        for j in 1:n
-            # if i == a || j == b || i // j == a // b
-            abscorner = abs.([i,j] - [a,b])
-            println(corner)
-            if i == a || j == b || abscorner[1] == abscorner[2]
-
-                mat[i,j] = true
-            end
-        end
-    end
-    return mat
-
-end
 
 function run()
-    board = collect.(split(board, "\n"))
+    # board = collect.(split(board, "\n"))
+    OLDSIZE = 3
+    NEWSIZE = 10
+    OFFSET = 4
+    ##mat = hcat(map(x -> map(==('#'), collect(x)), tile[2:end])...)
 
+    # lines = map(collect, readlines("in17.txt"))
+    lines = map(collect, readlines("testin17.txt"))
+    startgrid = permutedims(hcat(lines...))
+    grid = repeat(['.'],NEWSIZE,NEWSIZE,NEWSIZE,NEWSIZE)
+    # startgrid = map(==('#'), permutedims(hcat(lines...)))
+    # grid = Bool.(zeros(NEWSIZE,NEWSIZE))
 
-    grid = permutedims(hcat(lines...))
+    k = OFFSET
+    l = OFFSET
+    for i in 1:OLDSIZE
+        for j in 1:OLDSIZE
+            grid[OFFSET+i,OFFSET+j,OFFSET,OFFSET] = startgrid[i,j]
+        end
+    end
 
-    fill('.', 100, 93)
+    # pprint(grid)
+    # print(startgrid)
+    display(pprint(grid[:,:,OFFSET,OFFSET]))
 
+    for cycle in 1:1
+        grid = transformM(grid)
+    end
 
-    reshape(filter(!=('\n'), collect(board)), 10, 10)
-
-
-    [collect(repeat('.', 10)) M collect(repeat('.', 10))]
-
-    tendots = collect(repeat('.', 10))
-
-    twelvedots1 = collect(repeat('.', 12))
-    twelvedots = reshape(twelvedots1, (1, length(twelvedots1)))
-
-    lines = map(collect, readlines("testin11.txt"))[1:end-1]
-    mker = reshape(reduce(vcat, lines), 10, 10)
-
-    M = [twelvedots; tendots mker tendots; twelvedots]
-    nextM = []
-
-
-    found = false
-    while found == false
-
-        # print(M)
-
-        nextM = copy(M)
-        (m,n) = size(M)
-        for i in 2:m-1
-            for j in 2:n-1
-                nextM[i,j] = transform2(M, i, j)
+    for k in 1:NEWSIZE
+        for l in 1:NEWSIZE
+            # display(grid[:,:,k])
+            if count(==('#'), grid[:,:,k,l]) > 0
+                println(k)
+                display(pprint(grid[:,:,k,l]))
+                println()
             end
         end
-
-        if M == nextM
-            println(count(==('#'), M))
-            found = true
-            break
-        end
-
-        M = nextM
     end
+
+    println(count(==('#'), grid))
+
 end
 
-# try
-# if M[i,j] == '#'
-# end
-# catch
-# print("here")
-# counts = count(==('#'), neighbors)
+run()
