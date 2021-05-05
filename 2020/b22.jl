@@ -1,4 +1,4 @@
-function reccombat(p1, p2, slow1, slow2, oddstep)
+function reccombat(p1, p2, slow1, slow2, seen1, seen1, oddstep)
     # println("Player 1's deck: $p1")
     # println(p1)
     # println("Player 2's deck: $p2")
@@ -7,7 +7,7 @@ function reccombat(p1, p2, slow1, slow2, oddstep)
     # println("Slow2 deck: $slow2")
 
     # run two games, one twice as fast? if the two games have the same cards, player 1 wins
-    if oddstep && p1 == slow1 && p2 == slow2
+    if oddstep && ((p1 == slow1 && p2 == slow2) || (p1 in seen1 && p2 in seen2))
         return (true, p1, p2) # infinite loop, p1 wins
     end
 
@@ -21,13 +21,17 @@ function reccombat(p1, p2, slow1, slow2, oddstep)
         end
     end
 
+    if oddstep && ((p1 == slow1 && p2 == slow2) || (p1 == orig1 && p2 == orig2))
+        return (true, p1, p2) # infinite loop, p1 wins
+    end
+
     if length(p1) == 0 || length(p2) == 0
         return (length(p1) > 0, p1, p2) # if a player runs out of cards, the other player wins
     end
 
     if p1[1] < length(p1) && p2[1] < length(p2)
         # println("== NEW GAME ==")
-        (p1winner, _, _) = reccombat(p1[2:p1[1]+1], p2[2:p2[1]+1], p1[2:p1[1]+1], p2[2:p2[1]+1], false)
+        (p1winner, _, _) = reccombat(p1[2:p1[1]+1], p2[2:p2[1]+1], p1[2:p1[1]+1], p2[2:p2[1]+1], p1[2:p1[1]+1], p2[2:p2[1]+1], false)
     else
         # println("-- NEW ROUND --")
         p1winner = p1[1] > p2[1]
@@ -36,12 +40,12 @@ function reccombat(p1, p2, slow1, slow2, oddstep)
     if p1winner
         p1 = vcat(p1[2:end], p1[1], p2[1])
         p2 = p2[2:end]
-        reccombat(p1, p2, slow1, slow2, !oddstep)
+        reccombat(p1, p2, slow1, slow2, orig1, orig2, !oddstep)
 
     else
         p2 = vcat(p2[2:end], p2[1], p1[1])
         p1 = p1[2:end]
-        reccombat(p1, p2, slow1, slow2, !oddstep)
+        reccombat(p1, p2, slow1, slow2, orig1, orig2, !oddstep)
     end
 end
 
@@ -52,7 +56,7 @@ function main()
     p2 = parse.(Int, input[2][2:end]) # only remove last element for in22.txt
     # p2 = parse.(Int, input[2][2:end-1]) # only remove last element for in22.txt
 
-    (p1winner, p1, p2) = reccombat(p1, p2, p1, p2, false)
+    (p1winner, p1, p2) = reccombat(p1, p2, p1, p2, p1, p2, false)
 
     if p1winner
         len = length(p1)
@@ -65,13 +69,7 @@ function main()
     end
 end
 
-
-
 main()
 
-# p1WinList = p1 .> p2
-# p2WinList = p2 .> p1
-# newP1 = vcat(p1[p1WinList], p2[p1WinList])
-# newP2 = vcat(p2[p2WinList], p1[p2WinList])
-
 # it's not 7981
+# it's not 9142
