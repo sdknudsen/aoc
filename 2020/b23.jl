@@ -1,19 +1,66 @@
-# strIn = "32415"
+using CircularList
 
-input = "389125467"
-# input = "716892543"
-arr = parse.(Int, collect(input))
+#####
+function step(h)
+    shift!(h, 3, :forward)
+    c = current(h).data; delete!(h); b = current(h).data; delete!(h); a = current(h).data; delete!(h)
+    curr = current(h)
+    destval = current(h).data - 1
 
-# curr = arr[1]
+    dest = current(h)
 
-function step(input, curr)
+    while(current(h).data != destval)
+        for i in 1:length(h)
+            forward!(h)
+            if current(h).data == destval
+                dest = current(h)
+                break
+            end
+        end
+        if dest.data != destval
+            destval = destval - 1
+        end
+        if destval <= 0
+            destval = maximum([x for x in h])
+        end
+    end
+
+    insert!(h,a)
+    insert!(h,b)
+    insert!(h,c)
+
+    jump!(h,curr)
+    forward!(h)
+end
+
+# julia> forward!(h)
+# CircularList.List(8,9,1,2,5,4,6,7,3)
+#
+# julia> a = head(h); delete!(h)
+# CircularList.List(3,9,1,2,5,4,6,7)
+#
+# julia> forward!(h); b = head(h); delete!(h)
+# CircularList.List(3,1,2,5,4,6,7)
+#
+# julia> forward!(h); c = head(h); delete!(h)
+# CircularList.List(3,2,5,4,6,7)
+#
+# julia> [a;b;c]
+# 3-element Array{CircularList.Node{Int64},1}:
+#  CircularList.Node(8)
+#  CircularList.Node(9)
+#  CircularList.Node(1)
+#
+# julia> current(h)
+####
+
+function step_old(input)
     # currpos = 1
     currin = curr
     arr = input #??
     currpos = findfirst(==(curr), arr)
     l = length(arr)
 
-    # for count = 1:102
     currpos = findfirst(==(curr), arr)
     pickupindexes = map(x -> mod(x, l) + 1, [currpos:currpos+2;])
     pickedup = arr[pickupindexes]
@@ -43,9 +90,7 @@ function step(input, curr)
     end
 
     # println("destination: $a")
-
     # println()
-
     # println(destination)
 
     arr = vcat(arr[1:destpos], pickedup, arr[destpos+1:end])
@@ -92,7 +137,7 @@ function unittest(input)
         destination = parse(Int, match(r"destination: (.*)", p[4])[1])
 
         # println("HERE")
-        actual = step(cups, keycup)
+        actual = step(cups)
 
         println("Test Eq")
         # println(actual["cups"])
@@ -103,7 +148,7 @@ function unittest(input)
         println(actual["pickup"] == pickup)
         println(actual["destination"] == destination)
 
-        println(eqorder(intercups, cups))
+        # println(eqorder(intercups, cups))
         println(interkey == keycup)
 
         intercups = actual["cupsout"]
@@ -121,51 +166,66 @@ function run()
 
     small_arr = parse.(Int, collect(input))
     # arr = small_arr
-    arr = vcat(small_arr, maximum(small_arr)+1:1000000)
+    arr = circularlist(small_arr)
+    # arr = vcat(small_arr, maximum(small_arr)+1:1000000)
     # key = 7
-    key = 3
+    # key = 3
 
-    d = Dict()
-    # for count = 1:100
-    for count = 1:10000000
-        if count % 2 == 0
-            println(count)
-            onepos = findfirst(==(1), arr)
-            println(arr[onepos])
-            println(arr[onepos+1])
-            println(arr[onepos+2])
-            println()
-        end
+    # d = Dict()
+    for count = 1:100
+    # for count = 1:10000000
+        ######if count % 2 == 0
+        ######    println(count)
+        ######    onepos = findfirst(==(1), arr)
+        ######    println(arr[onepos])
+        ######    println(arr[onepos+1])
+        ######    println(arr[onepos+2])
+        ######    println()
+        ######end
         # println("-- move $count --")
         # println("cups: $arr")
-        d = step(arr, key)
+        arr = step(arr)
 
         # TODO
         ###dest = d["destination"]
         ###pick = d["pickup"]
         ###println("pickup: $(pick)")
         ###println("destination: $(dest)")
-    # return Dict([("cupsin", input), ("keyin", currin), ("pickup", pickedup), ("destination", a), ("cupsout", arr), ("keyout", curr)])
+        # return Dict([("cupsin", input), ("keyin", currin), ("pickup", pickedup), ("destination", a), ("cupsout", arr), ("keyout", curr)])
         # println(actual["cups"])
         # println(cups)
 
-        key = d["keyout"]
-        arr = d["cupsout"]
+        ###key = d["keyout"]
+        ###arr = d["cupsout"]
         # println(arr)
         # println()
     end
 
     println("-- move $count --")
-    println("cups: $arr")
-    dest = d["destination"]
-    pick = d["pickup"]
-    println("pickup: $(pick)")
-    println("destination: $(dest)")
+    # println("cups: $arr")
+    # dest = d["destination"]
+    # pick = d["pickup"]
+    # println("pickup: $(pick)")
+    # println("destination: $(dest)")
+
+    for i in 1:length(arr)
+        forward!(arr)
+        if current(arr).data == 1
+            break
+        end
+    end
+    # if current(arr).data == 1
+    println(current(arr))
+    forward!(arr)
+    println(current(arr))
+    forward!(arr)
+    println(current(arr))
+    # end
 
 end
 
 # testinout = split.(split(read("testexpected23.txt", String), "\n\n"), "\n")
-testinout = read("testexpected23.txt", String)
+# testinout = read("testexpected23.txt", String)
 
 # unittest(testinout)
 run()
