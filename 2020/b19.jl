@@ -1,9 +1,6 @@
 using StatsBase
 
 function getRgx(expr, d)
-    # println("expr")
-    # println(expr)
-    # println()
 
     basecase = match(r"\"(.+)\"", expr)
     if basecase != nothing
@@ -16,102 +13,43 @@ function getRgx(expr, d)
         return "($l)|($r)"
 
     else
-        # println("here")
-        # println(contains(expr, ' '))
-
         arr = split(expr, ' ')
-        # recs = filter(x -> x == "8" || x == "11", exps)
         mapped = map(x -> getRgx(d[x], d), arr)
         return "(" * join(mapped, ")(") * ")"
     end
 
 end
 
+function isValid(rexp, x, d)
+
+    if match(rexp, x) === nothing
+        return false
+    end
+
+    fourtytwo = match(rexp, x)[:fourtytwo]
+    fourtytwo_count = length(collect(eachmatch(Regex(getRgx("42", d)), fourtytwo)))
+
+    thirtyone = match(rexp, x)[:thirtyone]
+    thirtyone_count = length(collect(eachmatch(Regex(getRgx("31", d)), thirtyone)))
+    # println("full: $x")
+    # println("42:   $fourtytwo")
+    # println("31:   $thirtyone")
+
+    return fourtytwo_count > thirtyone_count
+end
+
 function main()
     input = split.(split(read("in19.txt", String), "\n\n"), "\n")
-    # input = split.(split(read("testin19.txt", String), "\n\n"), "\n")
     # input = split.(split(read("testin19b.txt", String), "\n\n"), "\n")
     rgx = input[1]
-    exps = input[2][1:end - 1]  #
+    exps = input[2][1:end]
     d = Dict(split.(rgx, ": "))
-    # d["8"] = "42 | 42 42" # | 42 42 42" # | 42 42 42 42" # | 42 42 42 42 42" # | 42 42 42 42 42 42 | 42 42 42 42 42 42 42 | 42 42 42 42 42 42 42 42 | 42 42 42 42 42 42 42 42 42 | 42 42 42 42 42 42 42 42 42 42 | 42 42 42 42 42 42 42 42 42 42 42"
-    # d["11"] = "42 31 | 42 42 31 31" # | 42 42 42 31 31 31" # | 42 42 42 42 31 31 31 31" # | 42 42 42 42 42 31 31 31 31 31 | 42 42 42 42 42 42 31 31 31 31 31 31 | 42 42 42 42 42 42 42 31 31 31 31 31 31 31 | 42 42 42 42 42 42 42 42 31 31 31 31 31 31 31 31 | 42 42 42 42 42 42 42 42 42 31 31 31 31 31 31 31 31 31"
 
-    println("8")
-    println(getRgx("8", d))
-    println()
+    rexp = Regex("^(?<fourtytwo>" * getRgx("42", d) * ")+(?<thirtyone>" * getRgx("31", d) * ")+\$")
 
-    println("11")
-    println(getRgx("11", d))
-    println()
+    rexp_full = Regex("^(?<fourtytwo>(" * getRgx("42", d) * "+))((?<thirtyone>" * getRgx("31", d) * "+))\$")
 
-    println("42")
-    println(getRgx("42", d))
-    println()
-
-    println("31")
-    println(getRgx("31", d))
-    println()
-
-    println(d)
-    # rexp = Regex("^" * getRgx("0", d) * "\$")
-
-    # rexp = Regex("^" * getRgx("42", d) * "" * getRgx("31", d) * "\$")
-    rexp = Regex("^" * getRgx("42", d) * "+" * getRgx("31", d) * "+\$")
-    #not working:
-    ##########rexpa = Regex("^" * getRgx("42", d) * "+")
-    ##########rexpb = Regex(getRgx("31", d) * "+\$")
-    ##########filtered = filter(x -> match(rexpa, x) !== nothing && match(rexpb, x) !== nothing , exps)
-    ##########println(countmap(map(x -> match(rexpa, x) !== nothing || match(rexpb, x) !== nothing , exps)))
-
-    # pattern 42 must appear at least one more time than 31
-
-    println(rexp)
-
-
-    ###mapped = map(x -> match(rexp, x), exps)
-    ###filtered = filter(x -> x !== nothing, mapped)
-
-    #  println(filtered)
-    #  println()
-    #  println(map(x -> x[1], exps))
-    #  println(map(x -> x[2], exps))
-
-
-    println(countmap(map(x -> match(rexp, x) === nothing, exps)))
-
-    # c = 0
-    # for x in exps
-    #     if match(rexp, x) !== nothing
-    #         c += 1
-    #     end
-    # end
-    # println(c)
-    # println(length(filter(x -> match(rexp, x) !== nothing, exps)))
-
-    # parsed = map(x -> parseTicket(x), ts)
+    println(count(map(x -> isValid(rexp_full, x, d), exps)))
 end
 
 main()
-# ^\d+: \d+ \d+ | \d+ \d+$
-# "^[0-9]+: [0-9]+ [0-9]+ | [0-9]+ [0-9]+$"
-# not 179
-# not 250
-# not 251
-# not 57
-# not 258
-# not 268
-
-# exps = ["bbabbbbaabaabba"
-#          ,"babbbbaabbbbbabbbbbbaabaaabaaa"
-#          ,"aaabbbbbbaaaabaababaabababbabaaabbababababaaa"
-#          ,"bbbbbbbaaaabbbbaaabbabaaa"
-#          ,"bbbababbbbaaaaaaaabbababaaababaabab"
-#          ,"ababaaaaaabaaab"
-#          ,"ababaaaaabbbaba"
-#          ,"baabbaaaabbaaaababbaababb"
-#          ,"abbbbabbbbaaaababbbbbbaaaababb"
-#          ,"aaaaabbaabaaaaababaa"
-#          ,"aaaabbaabbaaaaaaabbbabbbaaabbaabaaa"
-#          ,"aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba"]
-# map(x -> match(rexp, x) === nothing, exps)

@@ -13,26 +13,26 @@ function getRgx(e, d)
     # println(isdefined(key))
 
     if i != nothing
-    println("i")
+        println("i")
         return e
     elseif a != nothing
-    println("a")
+        println("a")
         m = a.captures
         return "$(getRgx(d[m[1]],d))$(getRgx(d[m[2]],d))|$(getRgx(d[m[3]],d))$(getRgx(d[m[4]],d))"
     elseif b != nothing
-    println("b")
+        println("b")
         m = b.captures
         return "$(getRgx(d[m[1]],d))|$(getRgx(d[m[2]],d))"
     elseif c != nothing
-    println("c")
+        println("c")
         m = c.captures
         return "$(getRgx(d[m[1]],d))$(getRgx(d[m[2]],d))"
     elseif h != nothing
-    println("h")
+        println("h")
         m = h.captures
         return "$(getRgx(d[m[1]],d))$(getRgx(d[m[2]],d))$(getRgx(d[m[3]],d))"
     elseif g != nothing
-    println("g")
+        println("g")
         m = g.match
         return "$(getRgx(d[m],d))"
     else

@@ -13,7 +13,7 @@ function transform2(M, a, b, c, d)
     seat = M[a,b,c,d]
     # (m,n,p) = size(M)
     # neighborList = [(-1, -1) (-1, 0) (-1, +1) (0, -1) (0, +1) (+1, -1) (+1, 0) (+1, +1)]
-    offsetList = setdiff(reshape([[i,j,k,l] for i in -1:1, j in -1:1, k in -1:1, l in -1:1],1,81),[[0,0,0]])
+    offsetList = setdiff(reshape([[i,j,k,l] for i in -1:1, j in -1:1, k in -1:1, l in -1:1],1,81),[[0,0,0,0]])
     neighborList = [M[a+i,b+j,c+k,d+l] for (i,j,k,l) in offsetList]
     counts = count(==('#'), neighborList)
 
@@ -34,7 +34,7 @@ function transformM(M)
         for j in 2:n-1
             for k in 2:p-1
                 for l in 2:q-1
-                    nextM[i,j,k] = transform2(M, i, j, k, l)
+                    nextM[i,j,k,l] = transform2(M, i, j, k, l)
                 end
             end
         end
@@ -45,13 +45,13 @@ end
 
 function run()
     # board = collect.(split(board, "\n"))
-    OLDSIZE = 3
-    NEWSIZE = 10
-    OFFSET = 4
+    OLDSIZE = 8
+    NEWSIZE = 40
+    OFFSET = 17
     ##mat = hcat(map(x -> map(==('#'), collect(x)), tile[2:end])...)
 
-    # lines = map(collect, readlines("in17.txt"))
-    lines = map(collect, readlines("testin17.txt"))
+    lines = map(collect, readlines("in17.txt"))
+    # lines = map(collect, readlines("testin17.txt"))
     startgrid = permutedims(hcat(lines...))
     grid = repeat(['.'],NEWSIZE,NEWSIZE,NEWSIZE,NEWSIZE)
     # startgrid = map(==('#'), permutedims(hcat(lines...)))
@@ -69,20 +69,22 @@ function run()
     # print(startgrid)
     display(pprint(grid[:,:,OFFSET,OFFSET]))
 
-    for cycle in 1:1
+    for cycle in 1:6
+    println("next step")
+    println(cycle)
         grid = transformM(grid)
     end
 
-    for k in 1:NEWSIZE
-        for l in 1:NEWSIZE
-            # display(grid[:,:,k])
-            if count(==('#'), grid[:,:,k,l]) > 0
-                println(k)
-                display(pprint(grid[:,:,k,l]))
-                println()
-            end
-        end
-    end
+    # for k in 1:NEWSIZE
+    #     for l in 1:NEWSIZE
+    #         # display(grid[:,:,k])
+    #         if count(==('#'), grid[:,:,k,l]) > 0
+    #             println(k)
+    #             display(pprint(grid[:,:,k,l]))
+    #             println()
+    #         end
+    #     end
+    # end
 
     println(count(==('#'), grid))
 

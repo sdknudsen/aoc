@@ -116,18 +116,25 @@ function unittest(input)
 end
 
 function run()
-    input = "389125467"
+    # input = "389125467"
+    input = "716892543"
+
     # input = "716892543"
     arr = parse.(Int, collect(input))
-    key = 3
+    key = 7
+    # key = 3
 
-    for count = 1:100
+    for count = 1:101
         println("-- move $count --")
         println("cups: $arr")
         d = step(arr, key)
 
-        # if this is supposed to be the destination, it's wrong:
-        println("destination: $(count + 1)")
+        # TODO
+        dest = d["destination"]
+        pick = d["pickup"]
+        println("pickup: $(pick)")
+        println("destination: $(dest)")
+    # return Dict([("cupsin", input), ("keyin", currin), ("pickup", pickedup), ("destination", a), ("cupsout", arr), ("keyout", curr)])
         # println(actual["cups"])
         # println(cups)
 
@@ -145,3 +152,5 @@ testinout = read("testexpected23.txt", String)
 run()
 
 # step(arr, 3)
+# not 95867432
+# the mistake was that I didn't change the initial key

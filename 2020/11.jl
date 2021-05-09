@@ -143,7 +143,7 @@ function run()
 
 
     found = false
-    while found == false
+    while found == false # change to not found? !found?
 
         # print(M)
 
